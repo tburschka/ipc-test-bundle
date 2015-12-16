@@ -2,7 +2,7 @@
 
 namespace IPC\TestBundle\Tests;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -10,9 +10,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class AbstractSymfonyTest extends KernelTestCase
 {
     /**
-     * @var EntityManager
+     * @var ManagerRegistry
      */
-    protected $entityManager = null;
+    protected $manager;
 
     /**
      * @var ContainerInterface
@@ -20,13 +20,25 @@ abstract class AbstractSymfonyTest extends KernelTestCase
     protected $container;
 
     /**
-     * Set up Symfony by boot kernel as well as get container and doctrine entity manager
+     * @var TestsEntityHandler
+     */
+    protected $testsEntityHandler;
+
+    /**
+     * Set up Symfony by boot kernel as well as get container and doctrine manager registry
      */
     public function setUp()
     {
         self::bootKernel();
-        $this->container = static::$kernel->getContainer();
-        $this->entityManager = $this->container->get('doctrine')->getManager();
+        $this->container          = static::$kernel->getContainer();
+        $this->manager            = $this->container->get('doctrine');
+        $this->testsEntityHandler = new TestsEntityHandler($this->manager);
+    }
+
+    public function tearDown()
+    {
+        $this->testsEntityHandler->removeAll();
+        parent::tearDown();
     }
 
     /**
@@ -43,16 +55,11 @@ abstract class AbstractSymfonyTest extends KernelTestCase
      */
     protected static function createClient(array $server = [], $services = [])
     {
-        /**
-         * @var Client $client
-         */
         $client = static::$kernel->getContainer()->get('test.client');
         $client->setServerParameters($server);
-
         foreach ($services as $key => $service) {
             $client->getContainer()->set($key, $service);
         }
-
         return $client;
     }
 }
