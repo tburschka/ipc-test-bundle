@@ -18,18 +18,25 @@ class TestsEntityHandler
     protected $entities = [];
 
 
+    /**
+     * TestsEntityHandler constructor.
+     *
+     * @param ManagerRegistry $manager
+     */
     public function __construct($manager)
     {
         $this->manager = $manager;
     }
 
     /**
-     * @param string $className
-     * @param int    $id
+     * Get a fresh copy of an entity by class name and identifier
      *
-     * @return object|null
+     * @param string $className The class name
+     * @param int    $id        The identifier
+     *
+     * @return object|null      Returns entity or null, if entity does not exist
      */
-    public function refresh($className, $id)
+    public function getFresh($className, $id)
     {
         $objectManager = $this->manager->getManagerForClass($className);
         $entity        = $objectManager->find($className, $id);
@@ -37,15 +44,14 @@ class TestsEntityHandler
     }
 
     /**
+     * Enqueue entity to the list of entities for remove by removeAll() function
      *
-     * Default LiFo, FiFo if parameter $isLiFo == false
-     *
-     * @param string $className
-     * @param int    $id
+     * @param string $className The class name
+     * @param int    $id        The identifier
      *
      * @return self
      */
-    protected function addForRemove($className, $id)
+    protected function enqueueRemove($className, $id)
     {
         $remove = [$className, $id];
         array_unshift($this->entities, $remove);
@@ -54,16 +60,18 @@ class TestsEntityHandler
 
 
     /**
-     * @param string $className
-     * @param int $entityId
+     * Remove an entity direct by class name and identifier
+     *
+     * @param string $className The class name
+     * @param int    $id        The identifier
      *
      * @return self
      *
      * @throws \Exception
      */
-    public function remove($className, $entityId)
+    public function remove($className, $id)
     {
-        $entity = $this->refresh($className, $entityId);
+        $entity = $this->getFresh($className, $id);
         if ($entity !== null) {
             $objectManager = $this->manager->getManagerForClass(get_class($entity));
             $objectManager->remove($entity);
@@ -73,9 +81,11 @@ class TestsEntityHandler
     }
 
     /**
+     * Remove all enqueued entities
+     *
      * @return self
      *
-     * @throws \RuntimeException
+     * @throws \RuntimeException Throws exception, if a deadlock was detected
      */
     public function removeAll()
     {
