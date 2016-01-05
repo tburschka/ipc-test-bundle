@@ -51,10 +51,9 @@ class TestsEntityHandler
      *
      * @return self
      */
-    protected function enqueueRemove($className, $id)
+    public function enqueueRemove($className, $id)
     {
-        $remove = [$className, $id];
-        array_unshift($this->entities, $remove);
+        array_unshift($this->entities, [$className, $id]);
         return $this;
     }
 
