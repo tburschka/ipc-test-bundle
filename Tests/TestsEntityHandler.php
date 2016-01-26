@@ -89,6 +89,7 @@ class TestsEntityHandler
      */
     public function removeAll()
     {
+        $this->manager->resetManager();
         $removedEntities = -1;
         while ($removedEntities != 0) {
             $removedEntities = 0;
@@ -98,7 +99,8 @@ class TestsEntityHandler
                     unset($this->entities[$key]);
                     $removedEntities++;
                 } catch (\Exception $e) {
-                    // ignore exception $e since a foreign key constraint may exists
+                    // ignore exception $e since a foreign key constraint may exists, but have to reset manager
+                    $this->manager->resetManager();
                 }
             }
         }
