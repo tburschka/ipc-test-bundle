@@ -1,8 +1,8 @@
 .idea/
 .vagrant/
+bin/
 build/
 docs/
 vendor/
-cache.properties
 composer.phar
 composer.lock
