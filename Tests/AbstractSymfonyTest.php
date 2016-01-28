@@ -3,9 +3,12 @@
 namespace IPC\TestBundle\Tests;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use IPC\TestBundle\Tests\PHPUnitFrameworkConstraint\SymfonyValidatorConstraint;
 use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class AbstractSymfonyTest extends KernelTestCase
 {
@@ -20,6 +23,11 @@ abstract class AbstractSymfonyTest extends KernelTestCase
     protected $container;
 
     /**
+     * @var ValidatorInterface
+     */
+    protected $validator;
+
+    /**
      * @var TestsEntityHandler
      */
     protected $testsEntityHandler;
@@ -32,6 +40,7 @@ abstract class AbstractSymfonyTest extends KernelTestCase
         self::bootKernel();
         $this->container          = static::$kernel->getContainer();
         $this->manager            = $this->container->get('doctrine');
+        $this->validator          = $this->container->get('validator');
         $this->testsEntityHandler = new TestsEntityHandler($this->manager);
     }
 
@@ -61,5 +70,16 @@ abstract class AbstractSymfonyTest extends KernelTestCase
             $client->getContainer()->set($key, $service);
         }
         return $client;
+    }
+
+    /**
+     * @param string                           $messageTemplate
+     * @param string                           $propertyPath
+     * @param ConstraintViolationListInterface $violationList
+     * @param string                           $message
+     */
+    protected function assertViolationExists($messageTemplate, $propertyPath, ConstraintViolationListInterface $violationList, $message = '')
+    {
+        self::assertThat($messageTemplate, new SymfonyValidatorConstraint($violationList, $propertyPath), $message);
     }
 }
