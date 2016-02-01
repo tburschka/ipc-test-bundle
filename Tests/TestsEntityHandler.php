@@ -37,15 +37,19 @@ class TestsEntityHandler
     /**
      * Get a fresh copy of an entity by class name and identifier
      *
-     * @param string $className The class name
-     * @param mixed  $id        The identifier(s)
+     * @param string $className  The class name
+     * @param mixed  $identifier The identifier(s)
      *
-     * @return object|null      Returns entity or null, if entity does not exist
+     * @return object|null       Returns entity or null, if entity does not exist
      */
-    public function getFresh($className, $id)
+    public function getFresh($className, $identifier)
     {
+        // normalize identifier
+        if (is_array($identifier) && count($identifier) == 1) {
+            $identifier = reset($identifier);
+        } // no else
         $objectManager = $this->manager->getManagerForClass($className);
-        $entity        = $objectManager->find($className, $id);
+        $entity        = $objectManager->find($className, $identifier);
         return $entity;
     }
 
@@ -59,8 +63,7 @@ class TestsEntityHandler
     public function enqueueRemove($entity)
     {
         $className = get_class($entity);
-        $identifier = $this->getClassMetaData($className)->getIdentifier();
-        array_unshift($this->entities, [$className, $identifier]);
+        array_unshift($this->entities, [$className, $this->getIdentifier($entity)]);
         return $this;
     }
 
@@ -74,8 +77,26 @@ class TestsEntityHandler
     public function remove($entity)
     {
         $className = get_class($entity);
-        $identifier = $this->getClassMetaData($className)->getIdentifier();
-        return $this->removeByClassAndIdentifier($className, $identifier);
+        return $this->removeByClassAndIdentifier($className, $this->getIdentifier($entity));
+    }
+
+    /**
+     * Get identifier (values) from an entity
+     *
+     * @param mixed $entity The entity
+     *
+     * @return array
+     */
+    protected function getIdentifier($entity)
+    {
+        $className = get_class($entity);
+        $identifiers = $this->getClassMetaData($className)->getIdentifier();
+        $values = [];
+        foreach ($identifiers as $identifier) {
+            $get = 'get' . ucfirst($identifier);
+            $values[] = $entity->$get();
+        }
+        return $values;
     }
 
     /**
@@ -92,7 +113,7 @@ class TestsEntityHandler
     {
         $entity = $this->getFresh($className, $identifier);
         if ($entity !== null) {
-            $objectManager = $this->manager->getManagerForClass(get_class($entity));
+            $objectManager = $this->manager->getManagerForClass($className);
             $objectManager->remove($entity);
             $objectManager->flush();
         } // no else
