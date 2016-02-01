@@ -3,6 +3,7 @@
 namespace IPC\TestBundle\Tests;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 
 class TestsEntityHandler
 {
@@ -16,6 +17,11 @@ class TestsEntityHandler
      * @var array
      */
     protected $entities = [];
+
+    /**
+     * @var array
+     */
+    protected $classMetaData = [];
 
 
     /**
@@ -32,7 +38,7 @@ class TestsEntityHandler
      * Get a fresh copy of an entity by class name and identifier
      *
      * @param string $className The class name
-     * @param int    $id        The identifier
+     * @param mixed  $id        The identifier(s)
      *
      * @return object|null      Returns entity or null, if entity does not exist
      */
@@ -46,31 +52,45 @@ class TestsEntityHandler
     /**
      * Enqueue entity to the list of entities for remove by removeAll() function
      *
-     * @param string $className The class name
-     * @param int    $id        The identifier
+     * @param mixed $entity The entity
      *
-     * @return self
+     * @return $this
      */
-    public function enqueueRemove($className, $id)
+    public function enqueueRemove($entity)
     {
-        array_unshift($this->entities, [$className, $id]);
+        $className = get_class($entity);
+        $identifier = $this->getClassMetaData($className)->getIdentifier();
+        array_unshift($this->entities, [$className, $identifier]);
         return $this;
     }
 
+    /**
+     * Remove an entity direct by entity
+     *
+     * @param mixed $entity The entity
+     *
+     * @return $this
+     */
+    public function remove($entity)
+    {
+        $className = get_class($entity);
+        $identifier = $this->getClassMetaData($className)->getIdentifier();
+        return $this->removeByClassAndIdentifier($className, $identifier);
+    }
 
     /**
      * Remove an entity direct by class name and identifier
      *
-     * @param string $className The class name
-     * @param int    $id        The identifier
+     * @param string $className  The class name
+     * @param mixed  $identifier The identifier(s)
      *
-     * @return self
+     * @return $this
      *
      * @throws \Exception
      */
-    public function remove($className, $id)
+    public function removeByClassAndIdentifier($className, $identifier)
     {
-        $entity = $this->getFresh($className, $id);
+        $entity = $this->getFresh($className, $identifier);
         if ($entity !== null) {
             $objectManager = $this->manager->getManagerForClass(get_class($entity));
             $objectManager->remove($entity);
@@ -82,11 +102,11 @@ class TestsEntityHandler
     /**
      * Remove all enqueued entities
      *
-     * @return self
+     * @return $this
      *
      * @throws \RuntimeException Throws exception, if a deadlock was detected
      */
-    public function removeAll()
+    public function removeAllEnqueued()
     {
         $this->manager->resetManager();
         $removedEntities = -1;
@@ -94,7 +114,7 @@ class TestsEntityHandler
             $removedEntities = 0;
             foreach ($this->entities as $key => $value) {
                 try {
-                    $this->remove($value[0], $value[1]);
+                    $this->removeByClassAndIdentifier($value[0], $value[1]);
                     unset($this->entities[$key]);
                     $removedEntities++;
                 } catch (\Exception $e) {
@@ -107,5 +127,20 @@ class TestsEntityHandler
             throw new \RuntimeException('Remaining entities after removeAll().');
         } // no else
         return $this;
+    }
+
+    /**
+     * Get class metadata from doctrine using an local array cache
+     *
+     * @param string $className The class name
+     *
+     * @return ClassMetadata
+     */
+    protected function getClassMetaData($className)
+    {
+        if (!isset($this->classMetaData[$className])) {
+            $this->classMetaData[$className] = $this->manager->getManagerForClass($className)->getClassMetadata($className);
+        }
+        return $this->classMetaData[$className];
     }
 }

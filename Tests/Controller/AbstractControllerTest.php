@@ -19,7 +19,7 @@ abstract class AbstractControllerTest extends AbstractSymfonyTest
      * @inheritdoc
      * Set up a default client
      */
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
         $this->client = self::createClient($this->getDefaultServerParameter());

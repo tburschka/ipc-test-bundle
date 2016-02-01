@@ -35,7 +35,7 @@ abstract class AbstractSymfonyTest extends KernelTestCase
     /**
      * Set up Symfony by boot kernel as well as get container and doctrine manager registry
      */
-    public function setUp()
+    protected function setUp()
     {
         self::bootKernel();
         $this->container          = static::$kernel->getContainer();
@@ -44,10 +44,25 @@ abstract class AbstractSymfonyTest extends KernelTestCase
         $this->testsEntityHandler = new TestsEntityHandler($this->manager);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
-        $this->testsEntityHandler->removeAll();
+        $this->testsEntityHandler->removeAllEnqueued();
         parent::tearDown();
+    }
+
+    /**
+     * Remove an entity
+     *
+     * @param mixed $entity
+     * @param bool $now
+     */
+    protected function removeEntity($entity, $now = false)
+    {
+        if ($now) {
+            $this->testsEntityHandler->remove($entity);
+        } else {
+            $this->testsEntityHandler->enqueueRemove($entity);
+        }
     }
 
     /**
@@ -73,6 +88,8 @@ abstract class AbstractSymfonyTest extends KernelTestCase
     }
 
     /**
+     * Assert that an violation exists in a ConstraintViolationList
+     *
      * @param string                           $messageTemplate
      * @param string                           $propertyPath
      * @param ConstraintViolationListInterface $violationList
