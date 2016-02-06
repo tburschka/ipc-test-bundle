@@ -3,6 +3,24 @@ TestBundle
 
 This bundle provides some abstract test classes, which are useful and reusable.
 
+Ensure that your config_test.yml have the following configured options (skip web_profiler and|or swiftmailer options if you don't use them):
+
+```yaml
+framework:
+    test: ~
+    session:
+        storage_id: session.storage.mock_file
+    profiler:
+        collect: false
+
+web_profiler:
+    toolbar: false
+    intercept_redirects: false
+
+swiftmailer:
+    disable_delivery: true
+```
+
 AbstractSymfonyTest
 -------------------
 
@@ -47,4 +65,17 @@ security:
                     test:
                         password: test
                         roles: 'ROLE_USER'
+```
+
+
+AbstractTypeTestCase
+--------------------
+
+To test your form types you can use the AbstractTypeTestCase. Since it extends from AbstractSymfonyTest the validation is enabled by default and resolving form types from services.yml is possible.
+Ensure you update the framework block in config_test.yml to disable csrf_protection in validation tests.
+
+```yaml
+framework:
+    csrf_protection:
+        enabled: false
 ```
