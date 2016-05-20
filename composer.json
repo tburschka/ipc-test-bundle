@@ -3,12 +3,12 @@
   "type": "library",
   "description": "This bundle provides test methods for common test cases.",
   "keywords": ["php"],
-  "homepage": "http://bitbucket.ideaplexus.com/projects/IPC/repos/testbundle",
+  "homepage": "https://github.com/tburschka/ipc-test-bundle",
   "license": "MIT",
   "authors": [
     {
       "name": "Torsten Burschka",
-      "email": "torsten.burschka@ideaplexus.com"
+      "email": "torsten.burschka@gmail.com"
     }
   ],
   "require": {
@@ -18,8 +18,8 @@
     "doctrine/orm": "~2.5"
   },
   "require-dev": {
-    "phpunit/phpunit": "@stable",
     "symfony/phpunit-bridge": "@stable",
+    "phpunit/phpunit": "@stable",
     "pdepend/pdepend" : "@stable",
     "phploc/phploc": "@stable",
     "phpmd/phpmd": "@stable",
