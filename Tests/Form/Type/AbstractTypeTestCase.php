@@ -28,9 +28,9 @@ abstract class AbstractTypeTestCase extends AbstractSymfonyTest
     protected function setUp()
     {
         parent::setUp();
-        $this->factory = $this->container->get('form.factory');
+        $this->factory    = $this->container->get('form.factory');
         $this->dispatcher = $this->container->get('event_dispatcher');
-        $this->builder = new FormBuilder(null, null, $this->dispatcher, $this->factory);
+        $this->builder    = new FormBuilder(null, null, $this->dispatcher, $this->factory);
     }
 
     public static function assertDateTimeEquals(\DateTime $expected, \DateTime $actual)
@@ -40,6 +40,6 @@ abstract class AbstractTypeTestCase extends AbstractSymfonyTest
 
     protected function getExtensions()
     {
-        return array();
+        return [];
     }
 }

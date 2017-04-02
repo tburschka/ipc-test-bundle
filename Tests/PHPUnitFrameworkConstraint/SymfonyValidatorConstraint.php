@@ -2,9 +2,10 @@
 
 namespace IPC\TestBundle\Tests\PHPUnitFrameworkConstraint;
 
+use PHPUnit\Framework\Constraint\Constraint;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
-class SymfonyValidatorConstraint extends \PHPUnit_Framework_Constraint
+class SymfonyValidatorConstraint extends Constraint
 {
 
     /**
@@ -21,7 +22,7 @@ class SymfonyValidatorConstraint extends \PHPUnit_Framework_Constraint
     {
         parent::__construct();
         $this->constraintViolationList = $constraintViolationList;
-        $this->propertyPath = $propertyPath;
+        $this->propertyPath            = $propertyPath;
     }
 
     /**
@@ -33,7 +34,7 @@ class SymfonyValidatorConstraint extends \PHPUnit_Framework_Constraint
         foreach ($this->constraintViolationList as $constraintViolation) {
             $map[$constraintViolation->getPropertyPath()][] = $constraintViolation->getMessageTemplate();
         }
-        return (array_key_exists($this->propertyPath, $map) && in_array($other, $map[$this->propertyPath]));
+        return (array_key_exists($this->propertyPath, $map) && in_array($other, $map[$this->propertyPath], true));
     }
 
     /**

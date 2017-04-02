@@ -45,12 +45,12 @@ class TestsEntityHandler
     public function getFresh($className, $identifier)
     {
         // normalize identifier
-        if (is_array($identifier) && count($identifier) == 1) {
+        if (is_array($identifier) && count($identifier) === 1) {
             $identifier = reset($identifier);
         } // no else
         $objectManager = $this->manager->getManagerForClass($className);
-        $entity        = $objectManager->find($className, $identifier);
-        return $entity;
+
+        return $objectManager->find($className, $identifier);
     }
 
     /**
@@ -89,9 +89,9 @@ class TestsEntityHandler
      */
     protected function getIdentifier($entity)
     {
-        $className = get_class($entity);
+        $className   = get_class($entity);
         $identifiers = $this->getClassMetaData($className)->getIdentifier();
-        $values = [];
+        $values      = [];
         foreach ($identifiers as $identifier) {
             $get = 'get' . ucfirst($identifier);
             $values[] = $entity->$get();
@@ -131,7 +131,7 @@ class TestsEntityHandler
     {
         $this->manager->resetManager();
         $removedEntities = -1;
-        while ($removedEntities != 0) {
+        while ($removedEntities !== 0) {
             $removedEntities = 0;
             foreach ($this->entities as $key => $value) {
                 try {
